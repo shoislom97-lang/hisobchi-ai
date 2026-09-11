@@ -1,0 +1,25 @@
+# Maxfiy ma'lumotlar — HECH QACHON commit qilinmasin
+.env
+credentials.json
+*.json.key
+service-account*.json
+
+# Jurnal va vaqtinchalik fayllar
+bot.log
+bot.err.log
+*.log
+exports/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+
+# Muharrir
+.vscode/
+.idea/
+*.swp
+.DS_Store
