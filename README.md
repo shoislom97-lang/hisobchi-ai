@@ -177,3 +177,66 @@ Har bir yozuv tagida **✏️ Kategoriya** va **🗑 O'chirish** tugmalari chiqa
   storage'ga o'tish mumkin.
 - AI tahlili — dastlabki maslahat. Muhim moliyaviy va yuridik qarorlar uchun
   mutaxassis bilan maslahatlashish kerak.
+
+---
+
+## Railway'ga joylashtirish
+
+Bot doimiy ishlashi uchun uni serverga joylash kerak. Railway `Procfile` va
+`railway.json` orqali avtomatik sozlanadi — bot **worker** sifatida ishlaydi
+(HTTP porti kerak emas, chunki u Telegram'dan o'zi so'rab turadi).
+
+### 1. Kodni GitHub'ga yuklang
+
+```bash
+git push -u origin main
+```
+
+### 2. Railway loyihasi
+
+[railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
+→ `hisobchi-ai` reposini tanlang.
+
+### 3. Muhit o'zgaruvchilari
+
+Railway'da `.env` fayli bo'lmaydi. Loyiha → **Variables** bo'limiga quyidagilarni
+qo'shing:
+
+| O'zgaruvchi | Qiymat |
+|---|---|
+| `BOT_TOKEN` | @BotFather bergan token |
+| `OPENAI_API_KEY` | `sk-proj-...` |
+| `ALLOWED_USER_IDS` | Telegram ID'ingiz |
+| `SPREADSHEET_ID` | Jadval havolasidagi ID |
+| `GOOGLE_CREDENTIALS_JSON` | `credentials.json` faylining **butun mazmuni** |
+| `OPENAI_MODEL` | `gpt-5.5` |
+| `OPENAI_PARSER_MODEL` | `gpt-5.4-mini` |
+| `OPENAI_STT_MODEL` | `gpt-transcribe` |
+
+> `GOOGLE_CREDENTIALS_JSON` — faylni matn muharririda oching, hammasini nusxalab
+> (`Ctrl+A`, `Ctrl+C`) qiymat maydoniga qo'ying. Qatorlarni o'zgartirmang.
+> Kod uni `GOOGLE_CREDENTIALS_FILE` dan ustun qo'yadi, shuning uchun serverda
+> fayl kerak emas.
+
+### 4. Ishga tushirish
+
+Railway o'zi build qilib ishga tushiradi. **Deploy Logs** da quyidagi qatorlarni
+ko'rsangiz — hammasi joyida:
+
+```
+Google Sheets ulandi: Hisobchi AI — Tranzaksiyalar
+Bot ishga tushdi: @<bot_nomi>
+Run polling for bot ...
+```
+
+### Muhim: bir vaqtda faqat bitta nusxa
+
+Telegram bitta botga bir vaqtda faqat bitta `getUpdates` oqimiga ruxsat beradi.
+Railway'da ishga tushirgandan keyin **kompyuteringizdagi botni to'xtating**, aks
+holda ikkalasi navbat bilan xabarlarni tortib oladi va bot xato ishlaydi.
+
+```powershell
+Get-CimInstance Win32_Process -Filter "name='python.exe'" |
+  Where-Object CommandLine -like '*bot.py*' |
+  ForEach-Object { Stop-Process -Id $_.ProcessId }
+```

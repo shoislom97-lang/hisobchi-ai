@@ -1,4 +1,9 @@
-"""Bot sozlamalari — barcha maxfiy qiymatlar .env faylidan o'qiladi."""
+"""Bot sozlamalari.
+
+Lokal ishlaganda qiymatlar `.env` faylidan o'qiladi. Serverda (Railway, VPS)
+`.env` bo'lmaydi — o'sha qiymatlar muhit o'zgaruvchilari sifatida beriladi.
+Ikkala holat ham bir xil kod bilan ishlaydi.
+"""
 
 from __future__ import annotations
 
@@ -14,7 +19,10 @@ load_dotenv(BASE_DIR / ".env")
 def _env(name: str, default: str | None = None, *, required: bool = False) -> str:
     value = os.getenv(name, default)
     if required and not value:
-        raise RuntimeError(f"{name} .env faylida ko'rsatilmagan")
+        raise RuntimeError(
+            f"{name} ko'rsatilmagan — uni .env fayliga yoki serverdagi "
+            f"muhit o'zgaruvchilariga qo'shing"
+        )
     return value or ""
 
 
@@ -40,6 +48,10 @@ def supports_reasoning(model: str) -> bool:
     return model.startswith(("gpt-5", "gpt-6", "o1", "o3", "o4"))
 
 # --- Google Sheets ----------------------------------------------------------
+# Serverda fayl joylashtirib bo'lmaydi, shuning uchun servis akkaunt kalitini
+# butun JSON matni sifatida GOOGLE_CREDENTIALS_JSON o'zgaruvchisiga qo'yish
+# mumkin. Ikkalasi berilsa — JSON ustun turadi.
+GOOGLE_CREDENTIALS_JSON = _env("GOOGLE_CREDENTIALS_JSON")
 GOOGLE_CREDENTIALS_FILE = _env("GOOGLE_CREDENTIALS_FILE", str(BASE_DIR / "credentials.json"))
 SPREADSHEET_ID = _env("SPREADSHEET_ID", required=True)
 WORKSHEET_NAME = _env("WORKSHEET_NAME", "Tranzaksiyalar")

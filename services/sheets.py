@@ -7,8 +7,10 @@ gspread sinxron ishlaydi, shuning uchun har bir ommaviy funksiya
 from __future__ import annotations
 
 import asyncio
+import json
 import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import gspread
@@ -43,12 +45,31 @@ _worksheet: gspread.Worksheet | None = None
 _lock = asyncio.Lock()
 
 
-def _open_worksheet() -> gspread.Worksheet:
-    """Ish varag'ini ochadi, bo'lmasa yaratadi va sarlavhani qo'yadi."""
-    creds = Credentials.from_service_account_file(
+def _credentials() -> Credentials:
+    """Servis akkaunt kalitini muhit o'zgaruvchisidan yoki fayldan oladi."""
+    if config.GOOGLE_CREDENTIALS_JSON:
+        try:
+            info = json.loads(config.GOOGLE_CREDENTIALS_JSON)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "GOOGLE_CREDENTIALS_JSON yaroqli JSON emas — servis akkaunt "
+                "faylining butun mazmunini o'zgartirmasdan joylang"
+            ) from exc
+        return Credentials.from_service_account_info(info, scopes=SCOPES)
+
+    if not Path(config.GOOGLE_CREDENTIALS_FILE).exists():
+        raise RuntimeError(
+            f"Servis akkaunt kaliti topilmadi: {config.GOOGLE_CREDENTIALS_FILE}. "
+            "Faylni joylang yoki GOOGLE_CREDENTIALS_JSON o'zgaruvchisini bering."
+        )
+    return Credentials.from_service_account_file(
         config.GOOGLE_CREDENTIALS_FILE, scopes=SCOPES
     )
-    spreadsheet = gspread.authorize(creds).open_by_key(config.SPREADSHEET_ID)
+
+
+def _open_worksheet() -> gspread.Worksheet:
+    """Ish varag'ini ochadi, bo'lmasa yaratadi va sarlavhani qo'yadi."""
+    spreadsheet = gspread.authorize(_credentials()).open_by_key(config.SPREADSHEET_ID)
 
     try:
         ws = spreadsheet.worksheet(config.WORKSHEET_NAME)
